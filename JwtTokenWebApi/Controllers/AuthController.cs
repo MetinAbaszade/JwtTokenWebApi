@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using JwtTokenWebApi.DTOs;
+using JwtTokenWebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,90 +14,49 @@ namespace JwtTokenWebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
-        private IConfiguration _configuration;
+        private readonly IAuthSevice _authSevice;
+        private readonly IUserService _userService;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IAuthSevice authSevice, IUserService userService)
         {
-            _configuration = configuration;
+            _authSevice = authSevice;
+            _userService = userService;
         }
 
-
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<User>> RegisterUser(UserDto request)
         {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            user.UserName = request.UserName;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-
+            var user = await _authSevice.RegisterUser(request);
             return Ok(user);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<AuthResponseDto>> Login(UserDto request)
         {
-            if (user.UserName != request.UserName)
-            {
-                return BadRequest("User Not Found!");
-            }
+            var response = await _authSevice.LoginUser(request);
+            if (response.IsSuccessfull)
+                return Ok(response);
 
-            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return BadRequest("Wrong Password!");
-            }
-
-            var token = CreateToken(user);
-
-            return Ok(token);
+            return BadRequest(response);
         }
 
-
-
-        private string CreateToken(User user)
+        [HttpGet, Authorize]
+        public ActionResult<object> GetUserRole()
         {
-            List<Claim> claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
+            var User = _userService.GetUserRole();
 
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("Appsettings:Token").Value));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims, 
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
+            return Ok(User);
         }
 
-
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<string>> RefreshToken()
         {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
-        }
+            var response = await _authSevice.RefreshToken();
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-                // SequenceEqual vs Equals
-            }
+            if (response.IsSuccessfull)
+                return Ok(response);
+
+            return BadRequest(response);
         }
 
     }
