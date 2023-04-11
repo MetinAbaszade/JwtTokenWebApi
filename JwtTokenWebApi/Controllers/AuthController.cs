@@ -1,12 +1,8 @@
 ﻿using JwtTokenWebApi.DTOs;
-using JwtTokenWebApi.Services;
+using JwtTokenWebApi.Entities.Concrete;
+using JwtTokenWebApi.Services.UserService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace JwtTokenWebApi.Controllers
 {

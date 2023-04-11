@@ -1,8 +1,8 @@
-﻿
-using JwtTokenWebApi.Data;
+﻿using JwtTokenWebApi.Data;
+using JwtTokenWebApi.Data.DataAccess.Abstract;
+using JwtTokenWebApi.Data.DataAccess.Concrete.EntityFramework;
 using JwtTokenWebApi.DTOs;
-using JwtTokenWebApi.Entities;
-using Microsoft.AspNetCore.Mvc;
+using JwtTokenWebApi.Entities.Concrete;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,22 +14,23 @@ namespace JwtTokenWebApi.Services.AuthService
 {
     public class AuthService : IAuthSevice
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IUserDal _userDal;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(AppDbContext dbContext, 
+        public AuthService(IUserDal userDal, 
                            IConfiguration configuration, 
                            IHttpContextAccessor httpContextAccessor)
         {
-            _dbContext = dbContext;
+            _userDal = userDal;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<AuthResponseDto> LoginUser(UserDto request)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.UserName == request.UserName);
+            var Users = await _userDal.GetList();
+            var user = Users.FirstOrDefault(u => u.UserName == request.UserName);
 
             if (user == null)
             {
@@ -65,8 +66,7 @@ namespace JwtTokenWebApi.Services.AuthService
                 PasswordSalt = passwordSalt
             };
 
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            await _userDal.Add(user);
 
             return user;
         }
@@ -120,15 +120,14 @@ namespace JwtTokenWebApi.Services.AuthService
             user.TokenCreated = refreshToken.Created;
             user.TokenExpires = refreshToken.Expires;
 
-
-            _dbContext.Entry(user).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+            await _userDal.Update(user);
         }
 
         public async Task<AuthResponseDto> RefreshToken()
         {
+            var Users = await _userDal.GetList();
             var refreshToken = _httpContextAccessor?.HttpContext?.Request.Cookies["refreshToken"];
-            var user = _dbContext.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
+            var user = Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
 
             if (user == null)
             {

@@ -1,6 +1,9 @@
-﻿namespace JwtTokenWebApi.Entities
+﻿using JwtTokenWebApi.Entities.Abstract;
+using Microsoft.AspNetCore.Identity;
+
+namespace JwtTokenWebApi.Entities.Concrete
 {
-    public class User
+    public class User : IEntity
     {
         public int Id { get; set; }
         public string UserName { get; set; } = string.Empty;
@@ -9,5 +12,6 @@
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime TokenCreated { get; set; }
         public DateTime TokenExpires { get; set; }
+
     }
 }

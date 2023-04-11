@@ -1,4 +1,5 @@
 ﻿using JwtTokenWebApi.DTOs;
+using JwtTokenWebApi.Entities.Concrete;
 
 namespace JwtTokenWebApi.Services.AuthService
 {

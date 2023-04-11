@@ -1,7 +1,9 @@
 global using JwtTokenWebApi.Entities;
 global using JwtTokenWebApi.Services.AuthService;
 using JwtTokenWebApi.Data;
-using JwtTokenWebApi.Services;
+using JwtTokenWebApi.Data.DataAccess.Abstract;
+using JwtTokenWebApi.Data.DataAccess.Concrete.EntityFramework;
+using JwtTokenWebApi.Services.UserService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,10 +22,14 @@ namespace JwtTokenWebApi
 
             // Add services to the container.
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
+
+            builder.Services.AddScoped<IUserDal, EfUserDal>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthSevice, AuthService>();
+
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+        
             builder.Services.AddDbContext<AppDbContext>(options => 
                 options.UseSqlServer("Data Source=DESKTOP-G1Q07RP;Initial Catalog=JWTAuthorizationPractiseDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False"));
             builder.Services.AddHttpContextAccessor();

@@ -1,4 +1,4 @@
-﻿namespace JwtTokenWebApi.Services
+﻿namespace JwtTokenWebApi.Services.UserService
 {
     public interface IUserService
     {

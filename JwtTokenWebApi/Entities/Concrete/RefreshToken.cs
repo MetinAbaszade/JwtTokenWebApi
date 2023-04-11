@@ -1,6 +1,8 @@
-﻿namespace JwtTokenWebApi.Entities
+﻿using JwtTokenWebApi.Entities.Abstract;
+
+namespace JwtTokenWebApi.Entities.Concrete
 {
-    public class RefreshToken
+    public class RefreshToken : IEntity
     {
         public string Token { get; set; } = string.Empty;
         public DateTime Created { get; set; } = DateTime.Now;

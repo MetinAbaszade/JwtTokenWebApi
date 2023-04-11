@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace JwtTokenWebApi.Services
+namespace JwtTokenWebApi.Services.UserService
 {
     public class UserService : IUserService
     {
