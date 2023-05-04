@@ -55,5 +55,13 @@ namespace JwtTokenWebApi.Controllers
             return BadRequest(response);
         }
 
+        [HttpPost("send-verification-code")]
+        public async Task<ActionResult<string>> SendVerificationCode(string email)
+        {
+            var response = _authSevice.SendVerificationCode(email);
+
+            return response.ToString();
+        }
+
     }
 }

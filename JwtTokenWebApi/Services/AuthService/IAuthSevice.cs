@@ -8,5 +8,6 @@ namespace JwtTokenWebApi.Services.AuthService
         public Task<User> RegisterUser(UserDto request);
         public Task<AuthResponseDto> LoginUser(UserDto request);
         public Task<AuthResponseDto> RefreshToken();
+        public bool SendVerificationCode(string recipientemail);
     }
 }
